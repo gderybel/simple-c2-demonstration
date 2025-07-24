@@ -12,5 +12,6 @@ If using default values, it will send data to 127.0.0.1:7053
 ## TODOs
 
 - [ ] Encrypt data transmitted
+- [ ] Allow file transfer
 
 It could be an interesting thing to combine it with https://github.com/gderybel/simple-ransomware-demonstration/, so you could send the encryption key to the server.

@@ -1,7 +1,8 @@
 """ Server socket module to handle connections from clients"""
+import ssl
+import time
 import socket
 import threading
-
 
 class ClientHandler(threading.Thread):
     """Handling multiple clients at the same time, and returns responses"""
@@ -17,7 +18,7 @@ class ClientHandler(threading.Thread):
                 data = self.client_socket.recv(1024).decode()
                 if not data:
                     break
-                print(f"[{self.address}] {data}")
+                print(f"[{self.address}][{time.time()}] {data}")
                 self.client_socket.send("Message received.".encode())
         except ConnectionResetError:
             print(f"[-] Connection lost from {self.address}")
@@ -28,9 +29,14 @@ class ClientHandler(threading.Thread):
 
 class SocketServer:
     """Handling server side"""
-    def __init__(self, host='127.0.0.1', port=7053):
+    def __init__(self, host='127.0.0.1', port=7053, certfile='server.crt', keyfile='server.key'):
         self.host = host
         self.port = port
+        self.certfile = certfile
+        self.keyfile = keyfile
+
+        self.context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        self.context.load_cert_chain(certfile='server.crt', keyfile='server.key')
         # Here, AF_INET corresponds to IPv4 (AF_INET6 for IPv6),
         # SOCK_STREAM to TCP (SOCK_DGRAM for UDP)
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -46,7 +52,8 @@ class SocketServer:
         try:
             while True:
                 client_sock, addr = self.server_socket.accept()
-                handler = ClientHandler(client_sock, addr)
+                conn = self.context.wrap_socket(client_sock, True)
+                handler = ClientHandler(conn, addr)
                 handler.start()
         except KeyboardInterrupt:
             print("\n[!] Server shutting down...")

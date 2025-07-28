@@ -1,6 +1,6 @@
 """ Server socket module to handle connections from clients"""
 import ssl
-import time
+import datetime
 import socket
 import threading
 
@@ -18,7 +18,7 @@ class ClientHandler(threading.Thread):
                 data = self.client_socket.recv(1024).decode()
                 if not data:
                     break
-                print(f"[{self.address}][{time.time()}] {data}")
+                print(f"[{self.address}][{datetime.datetime.now()}] {data}")
                 self.client_socket.send("Message received.".encode())
         except ConnectionResetError:
             print(f"[-] Connection lost from {self.address}")
